@@ -1,4 +1,4 @@
-// ==== PREGENERATED 1000 FLIPS ====
+// Simulate 1000 flips and analyze streaks
 const flips = Array.from({ length: 1000 }, () => Math.random() < 0.5 ? "H" : "T");
 
 let heads = flips.filter(f => f === "H").length;
@@ -8,18 +8,13 @@ let doubles = 0;
 let triples = 0;
 let quadruples = 0;
 
-for (let i = 0; i < flips.length - 1; i++) {
-  if (flips[i] === flips[i + 1]) {
-    doubles++;
-    if (flips[i] === flips[i + 2]) {
-      triples++;
-      if (flips[i] === flips[i + 3]) {
-        quadruples++;
-      }
-    }
-  }
+for (let i = 0; i < flips.length - 3; i++) {
+  if (flips[i] === flips[i + 1]) doubles++;
+  if (flips[i] === flips[i + 1] && flips[i] === flips[i + 2]) triples++;
+  if (flips[i] === flips[i + 1] && flips[i] === flips[i + 2] && flips[i] === flips[i + 3]) quadruples++;
 }
 
+// Show stats after page loads
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("stats").innerHTML = `
     <strong>Simulated 1000 Flips:</strong><br>
@@ -31,24 +26,25 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 });
 
+// Analyze user's flip input
 function analyzeUserFlips() {
   const input = document.getElementById("userFlips").value.trim();
+  const display = document.getElementById("prediction");
 
   if (!input) {
-    document.getElementById("prediction").innerText = "Please enter some flips.";
+    display.innerText = "⚠️ Please enter your flips (e.g. H,T,T,H)";
     return;
   }
 
   const userFlips = input.split(",").map(x => x.trim().toUpperCase()).filter(x => x === "H" || x === "T");
 
   if (userFlips.length === 0) {
-    document.getElementById("prediction").innerText = "Invalid input. Use H or T separated by commas.";
+    display.innerText = "⚠️ Invalid input. Use H or T separated by commas.";
     return;
   }
 
   const last = userFlips[userFlips.length - 1];
   let streak = 1;
-
   for (let i = userFlips.length - 2; i >= 0; i--) {
     if (userFlips[i] === last) {
       streak++;
@@ -57,21 +53,21 @@ function analyzeUserFlips() {
     }
   }
 
-  let message = `Last ${streak} flip(s) were '${last}'. `;
+  let prediction = `🧠 You’ve flipped ${streak}x '${last}' in a row. `;
 
   if (streak >= 4) {
-    message += `That’s a long streak. BET '${last === "H" ? "T" : "H"}' to break the pattern.`;
+    prediction += `Streak is long. Odds favor switch. Bet '${last === "H" ? "T" : "H"}'.`;
   } else if (streak === 3) {
-    message += triples > quadruples
-      ? `Triples are common. A 4x streak might break. BET '${last === "H" ? "T" : "H"}'.`
-      : `Quadruples happen a lot. BET '${last}' to ride the streak.`;
+    prediction += triples > quadruples
+      ? `Triples are more common. Bet '${last === "H" ? "T" : "H"}'.`
+      : `Quadruples show up. Ride the streak with '${last}'.`;
   } else if (streak === 2) {
-    message += triples > doubles
-      ? `Triples happen often after doubles. BET '${last}'.`
-      : `Doubles may break. BET '${last === "H" ? "T" : "H"}'.`;
+    prediction += triples > doubles
+      ? `Triples usually follow. Bet '${last}'.`
+      : `Break may come. Bet '${last === "H" ? "T" : "H"}'.`;
   } else {
-    message += `No strong trend. Coin is random — pick wisely.`;
+    prediction += `No trend. Pick based on gut or switch sides.`;
   }
 
-  document.getElementById("prediction").innerText = message;
+  display.innerText = prediction;
 }
