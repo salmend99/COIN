@@ -20,21 +20,32 @@ for (let i = 0; i < flips.length - 1; i++) {
   }
 }
 
-document.getElementById("stats").innerHTML = `
-  <strong>Simulated 1000 Flips:</strong><br>
-  Heads: ${heads}<br>
-  Tails: ${tails}<br>
-  Doubles: ${doubles}<br>
-  Triples: ${triples}<br>
-  Quadruples: ${quadruples}
-`;
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("stats").innerHTML = `
+    <strong>Simulated 1000 Flips:</strong><br>
+    Heads: ${heads}<br>
+    Tails: ${tails}<br>
+    Doubles: ${doubles}<br>
+    Triples: ${triples}<br>
+    Quadruples: ${quadruples}
+  `;
+});
 
-// ==== USER INPUT + BETTING ADVICE ====
 function analyzeUserFlips() {
   const input = document.getElementById("userFlips").value.trim();
-  if (!input) return;
 
-  const userFlips = input.split(",").map(x => x.trim().toUpperCase());
+  if (!input) {
+    document.getElementById("prediction").innerText = "Please enter some flips.";
+    return;
+  }
+
+  const userFlips = input.split(",").map(x => x.trim().toUpperCase()).filter(x => x === "H" || x === "T");
+
+  if (userFlips.length === 0) {
+    document.getElementById("prediction").innerText = "Invalid input. Use H or T separated by commas.";
+    return;
+  }
+
   const last = userFlips[userFlips.length - 1];
   let streak = 1;
 
@@ -49,17 +60,17 @@ function analyzeUserFlips() {
   let message = `Last ${streak} flip(s) were '${last}'. `;
 
   if (streak >= 4) {
-    message += `Unlikely to go further. BET '${last === "H" ? "T" : "H"}'`;
+    message += `That’s a long streak. BET '${last === "H" ? "T" : "H"}' to break the pattern.`;
   } else if (streak === 3) {
     message += triples > quadruples
-      ? `Triple streaks are common. BET '${last === "H" ? "T" : "H"}' to break the streak.`
-      : `Quadruples happen often here. BET '${last}' to ride it.`;
+      ? `Triples are common. A 4x streak might break. BET '${last === "H" ? "T" : "H"}'.`
+      : `Quadruples happen a lot. BET '${last}' to ride the streak.`;
   } else if (streak === 2) {
     message += triples > doubles
-      ? `Triples occur often. BET '${last}' to follow momentum.`
-      : `Double may break. BET '${last === "H" ? "T" : "H"}'`;
+      ? `Triples happen often after doubles. BET '${last}'.`
+      : `Doubles may break. BET '${last === "H" ? "T" : "H"}'.`;
   } else {
-    message += `No strong trend. BET either.`;
+    message += `No strong trend. Coin is random — pick wisely.`;
   }
 
   document.getElementById("prediction").innerText = message;
