@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coin Flip Predictor</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🪙 Coin Flip Predictor</h1>
+    
+    <button onclick="runSimulation()">Run 1000 Flips</button>
+
+    <div class="results">
+      <p id="stats"></p>
+    </div>
+
+    <h2>Enter Your Flip History</h2>
+    <input type="text" id="userFlips" placeholder="e.g. H,T,T,H,H,H" />
+    <button onclick="analyzeUserFlips()">Analyze</button>
+
+    <p id="prediction"></p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
