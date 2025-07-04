@@ -1,4 +1,4 @@
-// Simulate 1000 flips and analyze streaks
+// Simulate 1000 flips
 const flips = Array.from({ length: 1000 }, () => Math.random() < 0.5 ? "H" : "T");
 
 let heads = flips.filter(f => f === "H").length;
@@ -8,25 +8,57 @@ let doubles = 0;
 let triples = 0;
 let quadruples = 0;
 
-for (let i = 0; i < flips.length - 3; i++) {
-  if (flips[i] === flips[i + 1]) doubles++;
-  if (flips[i] === flips[i + 1] && flips[i] === flips[i + 2]) triples++;
-  if (flips[i] === flips[i + 1] && flips[i] === flips[i + 2] && flips[i] === flips[i + 3]) quadruples++;
+let switchCountsBeforeDouble = [];
+
+let switchesSinceLastDouble = 0;
+let lastFlip = flips[0];
+let lastWasSwitch = false;
+
+for (let i = 1; i < flips.length; i++) {
+  const current = flips[i];
+
+  // Track switch
+  if (current !== lastFlip) {
+    switchesSinceLastDouble++;
+    lastWasSwitch = true;
+  } else {
+    // Found a double
+    doubles++;
+    if (i >= 2 && flips[i] === flips[i - 1] && flips[i] === flips[i - 2]) {
+      triples++;
+      if (i >= 3 && flips[i] === flips[i - 3]) {
+        quadruples++;
+      }
+    }
+
+    if (lastWasSwitch) {
+      switchCountsBeforeDouble.push(switchesSinceLastDouble);
+      switchesSinceLastDouble = 0;
+      lastWasSwitch = false;
+    }
+  }
+
+  lastFlip = current;
 }
 
-// Show stats after page loads
 document.addEventListener("DOMContentLoaded", () => {
+  const avgSwitches = (
+    switchCountsBeforeDouble.reduce((a, b) => a + b, 0) /
+    (switchCountsBeforeDouble.length || 1)
+  ).toFixed(2);
+
   document.getElementById("stats").innerHTML = `
     <strong>Simulated 1000 Flips:</strong><br>
     Heads: ${heads}<br>
     Tails: ${tails}<br>
     Doubles: ${doubles}<br>
     Triples: ${triples}<br>
-    Quadruples: ${quadruples}
+    Quadruples: ${quadruples}<br><br>
+    Avg switches before a double: ${avgSwitches}<br>
+    Recorded: [${switchCountsBeforeDouble.join(", ")}]
   `;
 });
 
-// Analyze user's flip input
 function analyzeUserFlips() {
   const input = document.getElementById("userFlips").value.trim();
   const display = document.getElementById("prediction");
@@ -53,21 +85,21 @@ function analyzeUserFlips() {
     }
   }
 
-  let prediction = `🧠 You’ve flipped ${streak}x '${last}' in a row. `;
+  let message = `🧠 You’ve flipped ${streak}x '${last}' in a row. `;
 
   if (streak >= 4) {
-    prediction += `Streak is long. Odds favor switch. Bet '${last === "H" ? "T" : "H"}'.`;
+    message += `Streak is long. Odds favor switch. Bet '${last === "H" ? "T" : "H"}'.`;
   } else if (streak === 3) {
-    prediction += triples > quadruples
+    message += triples > quadruples
       ? `Triples are more common. Bet '${last === "H" ? "T" : "H"}'.`
       : `Quadruples show up. Ride the streak with '${last}'.`;
   } else if (streak === 2) {
-    prediction += triples > doubles
+    message += triples > doubles
       ? `Triples usually follow. Bet '${last}'.`
       : `Break may come. Bet '${last === "H" ? "T" : "H"}'.`;
   } else {
-    prediction += `No trend. Pick based on gut or switch sides.`;
+    message += `No trend. Pick based on gut or switch sides.`;
   }
 
-  display.innerText = prediction;
+  display.innerText = message;
 }
